@@ -1,0 +1,192 @@
+name: Performance Testing
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: '0 6 * * *'  # Daily at 6 AM
+
+jobs:
+  load-test:
+    name: Load Testing
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test_password
+          MYSQL_DATABASE: volcanion_auth_perf
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Create performance test environment
+      run: |
+        cat > .env.performance << EOF
+        NODE_ENV=production
+        PORT=3000
+        DB_HOST=localhost
+        DB_PORT=3306
+        DB_USER=root
+        DB_PASSWORD=test_password
+        DB_NAME=volcanion_auth_perf
+        REDIS_HOST=localhost
+        REDIS_PORT=6379
+        REDIS_PASSWORD=
+        JWT_ACCESS_SECRET=perf_test_jwt_access_secret_key
+        JWT_REFRESH_SECRET=perf_test_jwt_refresh_secret_key
+        JWT_ACCESS_EXPIRES_IN=15m
+        JWT_REFRESH_EXPIRES_IN=7d
+        EMAIL_HOST=smtp.ethereal.email
+        EMAIL_PORT=587
+        EMAIL_USER=test@ethereal.email
+        EMAIL_PASSWORD=test_password
+        EMAIL_FROM=noreply@volcanion-auth.com
+        APP_NAME=Volcanion Auth Performance
+        CLIENT_URL=http://localhost:3000
+        EOF
+
+    - name: Build application
+      run: npm run build
+
+    - name: Setup performance database
+      run: |
+        mysql -h localhost -P 3306 -u root -ptest_password -e "CREATE DATABASE IF NOT EXISTS volcanion_auth_perf;"
+        NODE_ENV=performance npm run setup:db
+
+    - name: Start application
+      run: |
+        NODE_ENV=performance npm start &
+        sleep 30
+        curl --retry 10 --retry-delay 1 --retry-connrefused http://localhost:3000/health
+
+    - name: Install Artillery
+      run: npm install -g artillery
+
+    - name: Run load tests
+      run: |
+        artillery run tests/performance/auth-load-test.yml --output performance-report.json
+
+    - name: Generate performance report
+      run: |
+        artillery report performance-report.json --output performance-report.html
+
+    - name: Upload performance artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-report
+        path: |
+          performance-report.json
+          performance-report.html
+        retention-days: 30
+
+    - name: Performance regression check
+      run: |
+        node scripts/check-performance-regression.js performance-report.json
+
+  lighthouse:
+    name: Lighthouse Performance
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build application
+      run: npm run build
+
+    - name: Start application
+      run: |
+        npm start &
+        sleep 30
+
+    - name: Run Lighthouse CI
+      uses: treosh/lighthouse-ci-action@v10
+      with:
+        configPath: './lighthouserc.json'
+        uploadArtifacts: true
+        temporaryPublicStorage: true
+
+  memory-leak-test:
+    name: Memory Leak Detection
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test_password
+          MYSQL_DATABASE: volcanion_auth_memory
+        ports:
+          - 3306:3306
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install memory testing tools
+      run: npm install -g clinic autocannon
+
+    - name: Setup memory test database
+      run: |
+        mysql -h localhost -P 3306 -u root -ptest_password -e "CREATE DATABASE IF NOT EXISTS volcanion_auth_memory;"
+        NODE_ENV=test npm run setup:db
+
+    - name: Run memory leak detection
+      run: |
+        clinic doctor --on-port 'autocannon -c 10 -d 60 localhost:3000/api/v1/auth/health' -- npm start
+        
+    - name: Upload memory analysis
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: memory-analysis
+        path: |
+          .clinic/
+        retention-days: 7

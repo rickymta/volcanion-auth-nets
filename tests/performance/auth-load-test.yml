@@ -1,0 +1,126 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 120
+      arrivalRate: 10
+      name: "Ramp up load"
+    - duration: 300
+      arrivalRate: 20
+      name: "Sustained load"
+  processor: "./auth-helpers.js"
+  variables:
+    testUsers: 100
+
+scenarios:
+  - name: "Register new user"
+    weight: 10
+    flow:
+      - post:
+          url: "/api/v1/auth/register"
+          json:
+            username: "testuser{{ $randomString() }}"
+            email: "test{{ $randomString() }}@example.com"
+            password: "TestPassword123!"
+            firstName: "Test"
+            lastName: "User"
+          capture:
+            - json: "$.token"
+              as: "accessToken"
+            - json: "$.refreshToken"
+              as: "refreshToken"
+
+  - name: "Login existing user"
+    weight: 30
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          beforeRequest: "setCredentials"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "accessToken"
+            - json: "$.refreshToken"
+              as: "refreshToken"
+
+  - name: "Get user profile"
+    weight: 25
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          beforeRequest: "setCredentials"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "accessToken"
+      - get:
+          url: "/api/v1/accounts/profile"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+
+  - name: "Refresh token"
+    weight: 15
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          beforeRequest: "setCredentials"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.refreshToken"
+              as: "refreshToken"
+      - post:
+          url: "/api/v1/auth/refresh"
+          json:
+            refreshToken: "{{ refreshToken }}"
+          capture:
+            - json: "$.token"
+              as: "newAccessToken"
+
+  - name: "Update profile"
+    weight: 10
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          beforeRequest: "setCredentials"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "accessToken"
+      - put:
+          url: "/api/v1/accounts/profile"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            firstName: "Updated"
+            lastName: "Name"
+
+  - name: "Logout"
+    weight: 10
+    flow:
+      - post:
+          url: "/api/v1/auth/login"
+          beforeRequest: "setCredentials"
+          json:
+            email: "{{ email }}"
+            password: "{{ password }}"
+          capture:
+            - json: "$.token"
+              as: "accessToken"
+            - json: "$.refreshToken"
+              as: "refreshToken"
+      - post:
+          url: "/api/v1/auth/logout"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            refreshToken: "{{ refreshToken }}"
