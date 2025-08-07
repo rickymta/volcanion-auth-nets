@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.DS_Store
+*.log
+coverage/
+.nyc_output/
+.vscode/settings.json
+uploads/
+temp/

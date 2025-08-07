@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: volcanion-mysql-dev
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: volcanion_auth
+      MYSQL_USER: volcanion_user
+      MYSQL_PASSWORD: volcanion_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    networks:
+      - volcanion-dev-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: volcanion-redis-dev
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass redis_pass
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - volcanion-dev-network
+
+  # Application (Development mode)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: volcanion-app-dev
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      
+      # Database
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: volcanion_user
+      DB_PASSWORD: volcanion_pass
+      DB_NAME: volcanion_auth
+      
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redis_pass
+      
+      # JWT Secrets
+      JWT_ACCESS_SECRET: dev-access-secret-key
+      JWT_REFRESH_SECRET: dev-refresh-secret-key
+      JWT_ACCESS_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 7d
+      
+      # Email (Mock for development)
+      EMAIL_HOST: smtp.ethereal.email
+      EMAIL_PORT: 587
+      EMAIL_SECURE: false
+      EMAIL_USER: dev@example.com
+      EMAIL_PASSWORD: dev_password
+      EMAIL_FROM: noreply@volcanion-dev.com
+      
+      # Application
+      APP_NAME: Volcanion Auth Dev
+      CLIENT_URL: http://localhost:3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./logs:/app/logs
+    networks:
+      - volcanion-dev-network
+    depends_on:
+      - mysql
+      - redis
+    command: npm run dev
+
+volumes:
+  mysql_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+
+networks:
+  volcanion-dev-network:
+    driver: bridge

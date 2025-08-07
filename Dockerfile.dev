@@ -1,0 +1,38 @@
+# Development Dockerfile
+FROM node:18-alpine
+
+# Install dumb-init
+RUN apk add --no-cache dumb-init
+
+# Create app directory
+WORKDIR /app
+
+# Create app user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodejs -u 1001
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Create necessary directories
+RUN mkdir -p /app/logs && chown nodejs:nodejs /app/logs
+RUN mkdir -p /app/uploads && chown nodejs:nodejs /app/uploads
+
+# Copy source code
+COPY . .
+
+# Change ownership
+RUN chown -R nodejs:nodejs /app
+
+# Switch to non-root user
+USER nodejs
+
+# Expose port
+EXPOSE 3000
+
+# Start application in development mode
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["npm", "run", "dev"]
