@@ -41,7 +41,7 @@ const options: swaggerJsdoc.Options = {
         // Auth Schemas
         RegisterRequest: {
           type: 'object',
-          required: ['email', 'password', 'firstName', 'lastName'],
+          required: ['email', 'password', 'first_name', 'last_name'],
           properties: {
             email: {
               type: 'string',
@@ -53,11 +53,11 @@ const options: swaggerJsdoc.Options = {
               minLength: 8,
               example: 'Password123!',
             },
-            firstName: {
+            first_name: {
               type: 'string',
               example: 'John',
             },
-            lastName: {
+            last_name: {
               type: 'string',
               example: 'Doe',
             },
@@ -127,11 +127,11 @@ const options: swaggerJsdoc.Options = {
         UpdateProfileRequest: {
           type: 'object',
           properties: {
-            firstName: {
+            first_name: {
               type: 'string',
               example: 'John',
             },
-            lastName: {
+            last_name: {
               type: 'string',
               example: 'Doe',
             },
@@ -234,11 +234,11 @@ const options: swaggerJsdoc.Options = {
               format: 'email',
               example: 'user@example.com',
             },
-            firstName: {
+            first_name: {
               type: 'string',
               example: 'John',
             },
-            lastName: {
+            last_name: {
               type: 'string',
               example: 'Doe',
             },

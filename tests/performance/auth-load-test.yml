@@ -24,8 +24,8 @@ scenarios:
             username: "testuser{{ $randomString() }}"
             email: "test{{ $randomString() }}@example.com"
             password: "TestPassword123!"
-            firstName: "Test"
-            lastName: "User"
+            first_name: "Test"
+            last_name: "User"
           capture:
             - json: "$.token"
               as: "accessToken"
@@ -101,8 +101,8 @@ scenarios:
           headers:
             Authorization: "Bearer {{ accessToken }}"
           json:
-            firstName: "Updated"
-            lastName: "Name"
+            first_name: "Updated"
+            last_name: "Name"
 
   - name: "Logout"
     weight: 10

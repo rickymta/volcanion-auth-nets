@@ -14,7 +14,7 @@ export class EmailService {
     }
   });
 
-  static async sendVerificationEmail(email: string, token: string, firstName?: string): Promise<boolean> {
+  static async sendVerificationEmail(email: string, token: string, first_name?: string): Promise<boolean> {
     try {
       const verificationUrl = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
       const appName = process.env.APP_NAME || 'Volcanion Auth';
@@ -50,7 +50,7 @@ export class EmailService {
                 <h1>${appName}</h1>
               </div>
               <div class="content">
-                <h2>Chào ${firstName || 'bạn'}!</h2>
+                <h2>Chào ${first_name || 'bạn'}!</h2>
                 <p>Cảm ơn bạn đã đăng ký tài khoản tại ${appName}. Để hoàn tất quá trình đăng ký, vui lòng xác thực địa chỉ email của bạn bằng cách nhấp vào nút bên dưới:</p>
                 
                 <div style="text-align: center;">
@@ -83,7 +83,7 @@ export class EmailService {
     }
   }
 
-  static async sendPasswordResetEmail(email: string, token: string, firstName?: string): Promise<boolean> {
+  static async sendPasswordResetEmail(email: string, token: string, first_name?: string): Promise<boolean> {
     try {
       const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
       const appName = process.env.APP_NAME || 'Volcanion Auth';
@@ -127,7 +127,7 @@ export class EmailService {
                 <h2>Đặt lại mật khẩu</h2>
               </div>
               <div class="content">
-                <h2>Chào ${firstName || 'bạn'}!</h2>
+                <h2>Chào ${first_name || 'bạn'}!</h2>
                 <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Nhấp vào nút bên dưới để tiến hành đặt lại mật khẩu:</p>
                 
                 <div style="text-align: center;">
@@ -167,7 +167,7 @@ export class EmailService {
     }
   }
 
-  static async sendPasswordChangeNotification(email: string, firstName?: string, ipAddress?: string): Promise<boolean> {
+  static async sendPasswordChangeNotification(email: string, first_name?: string, ipAddress?: string): Promise<boolean> {
     try {
       const appName = process.env.APP_NAME || 'Volcanion Auth';
       const currentTime = new Date().toLocaleString('vi-VN');
@@ -202,7 +202,7 @@ export class EmailService {
                 <h2>Thông báo thay đổi mật khẩu</h2>
               </div>
               <div class="content">
-                <h2>Chào ${firstName || 'bạn'}!</h2>
+                <h2>Chào ${first_name || 'bạn'}!</h2>
                 <p>Mật khẩu tài khoản của bạn đã được thay đổi thành công.</p>
                 
                 <div class="info-box">
@@ -240,7 +240,7 @@ export class EmailService {
     }
   }
 
-  static async sendWelcomeEmail(email: string, firstName?: string): Promise<boolean> {
+  static async sendWelcomeEmail(email: string, first_name?: string): Promise<boolean> {
     try {
       const appName = process.env.APP_NAME || 'Volcanion Auth';
       const clientUrl = process.env.CLIENT_URL;
@@ -276,7 +276,7 @@ export class EmailService {
                 <h1>🎉 Chào mừng đến với ${appName}!</h1>
               </div>
               <div class="content">
-                <h2>Chào ${firstName || 'bạn'}!</h2>
+                <h2>Chào ${first_name || 'bạn'}!</h2>
                 <p>Cảm ơn bạn đã đăng ký và xác thực tài khoản thành công tại ${appName}.</p>
                 
                 <p>Tài khoản của bạn đã sẵn sàng để sử dụng. Bạn có thể:</p>

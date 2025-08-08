@@ -20,7 +20,7 @@ describe('EmailService', () => {
   });
 
   describe('sendVerificationEmail', () => {
-    it('should send verification email successfully with firstName', async () => {
+    it('should send verification email successfully with first_name', async () => {
       mockSendMail.mockResolvedValue({ messageId: '123' });
 
       const result = await EmailService.sendVerificationEmail('test@example.com', 'test-token', 'John Doe');
@@ -34,7 +34,7 @@ describe('EmailService', () => {
       });
     });
 
-    it('should send verification email successfully without firstName', async () => {
+    it('should send verification email successfully without first_name', async () => {
       mockSendMail.mockResolvedValue({ messageId: '123' });
 
       const result = await EmailService.sendVerificationEmail('test@example.com', 'test-token');
@@ -71,7 +71,7 @@ describe('EmailService', () => {
   });
 
   describe('sendPasswordResetEmail', () => {
-    it('should send password reset email successfully with firstName', async () => {
+    it('should send password reset email successfully with first_name', async () => {
       mockSendMail.mockResolvedValue({ messageId: '456' });
 
       const result = await EmailService.sendPasswordResetEmail('test@example.com', 'reset-token', 'John Doe');
@@ -85,7 +85,7 @@ describe('EmailService', () => {
       });
     });
 
-    it('should send password reset email successfully without firstName', async () => {
+    it('should send password reset email successfully without first_name', async () => {
       mockSendMail.mockResolvedValue({ messageId: '456' });
 
       const result = await EmailService.sendPasswordResetEmail('test@example.com', 'reset-token');
@@ -183,7 +183,7 @@ describe('EmailService', () => {
   });
 
   describe('sendWelcomeEmail', () => {
-    it('should send welcome email successfully with firstName', async () => {
+    it('should send welcome email successfully with first_name', async () => {
       mockSendMail.mockResolvedValue({ messageId: '101' });
 
       const result = await EmailService.sendWelcomeEmail('test@example.com', 'John Doe');
@@ -197,7 +197,7 @@ describe('EmailService', () => {
       });
     });
 
-    it('should send welcome email successfully without firstName', async () => {
+    it('should send welcome email successfully without first_name', async () => {
       mockSendMail.mockResolvedValue({ messageId: '101' });
 
       const result = await EmailService.sendWelcomeEmail('test@example.com');

@@ -33,7 +33,7 @@ function createTestUser(requestParams, context, ee, next) {
   context.vars.username = `loadtest_${randomId}`;
   context.vars.email = `loadtest_${randomId}@example.com`;
   context.vars.password = 'TestPassword123!';
-  context.vars.firstName = 'Load';
-  context.vars.lastName = 'Test';
+  context.vars.first_name = 'Load';
+  context.vars.last_name = 'Test';
   return next();
 }

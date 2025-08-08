@@ -111,8 +111,8 @@ curl -X POST "http://localhost:3000/api/v1/auth/login" \
     "account": {
       "id": 1,
       "email": "user@example.com",
-      "firstName": "John",
-      "lastName": "Doe",
+      "first_name": "John",
+      "last_name": "Doe",
       "isEmailVerified": true,
       "isActive": true
     }
@@ -133,8 +133,8 @@ curl -X GET "http://localhost:3000/api/v1/accounts/profile" \
 {
   "email": "string (email format, required)",
   "password": "string (min 8 chars, required)",
-  "firstName": "string (required)",
-  "lastName": "string (required)",
+  "first_name": "string (required)",
+  "last_name": "string (required)",
   "phone": "string (optional)"
 }
 ```

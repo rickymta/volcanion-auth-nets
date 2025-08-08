@@ -68,7 +68,7 @@ describe('Account Routes', () => {
       it('should update user profile', async () => {
         const response = await request(app)
           .put('/account/profile')
-          .send({ firstName: 'John', lastName: 'Doe' })
+          .send({ first_name: 'John', last_name: 'Doe' })
           .expect(200);
 
         expect(response.body.success).toBe(true);
